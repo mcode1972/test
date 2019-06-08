@@ -37,7 +37,7 @@ public class CustomerServlet extends HttpServlet  {
         writer.println("<html><head><title>Customers</title></head><body><h2>Customers</h2><ul>");
         for (Customer customer : customers){
             writer.println("<li>"+customer.getName()+"("+customer.getCity()+") ("+
-                    "<a href='editCustomer?id="+customer.getId()+">edit</a>");
+                    "<a href='editCustomer?id="+customer.getId()+"' >edit</a>)</li>");
         }
         writer.println("</ul></body></html>");
     }
@@ -60,6 +60,60 @@ public class CustomerServlet extends HttpServlet  {
         } catch (NumberFormatException e){
         }
         Customer customer = getCustomer(customerId);
-        if (customer != null)
+        if (customer != null){
+            writer.println("<html><head>"
+            +"<title>Edit Customer</title></head>"
+            +"<body><h2>Edit Customer</h2>"
+            +"<form method='post' "
+            +"action='updateCustomer'>");
+            writer.println("<input type='hidden' name='id' value='"
+            +customerId+"' />");
+            writer.println("<table>");
+            writer.println("<tr><td>Name:</td><td>"
+            +"<input name='name' value='"
+            +customer.getName().replaceAll("'", "&#39;")
+            +"' /></td></tr>");
+            writer.println("<tr><td>City  :</td><td>"
+            +"<input name='city' value='"
+            +customer.getCity().replaceAll("'", "&#39")
+            +"' /></td></tr>");
+            writer.println("<tr><td colspan='2' style='text-align:right' >"
+            +"<input type='submit' value='Update' /></td></tr>");
+            writer.println("<tr><td colspan='2'>"
+            +"<a href='customer'>Customer List</a>"
+            +"</td></tr>");
+            writer.println("</table>");
+            writer.println("</form></body>");
+        }
+        else {
+            writer.println("No customer Found");
+        }
+    }
+    
+    @Override
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException {
+        String uri = request.getRequestURI();
+        if (uri.endsWith("/customer")) {
+            sendCustomerList(response);
+        }
+        else if (uri.endsWith("/editCustomer")){
+            sendEditCustomerForm(request,response);
+        }
+    }
+    
+    @Override
+    public void doPost(HttpServletRequest request,HttpServletResponse response) throws ServletException,IOException {
+        int customerId=0;
+        try {
+            customerId = Integer.parseInt(request.getParameter("id"));
+        }
+        catch (NumberFormatException e){
+        }
+        Customer customer = getCustomer(customerId);
+        if (customer != null){
+            customer.setName(request.getParameter("name"));
+            customer.setCity(request.getParameter("city"));
+        }
+        sendCustomerList(response);
     }
 }
